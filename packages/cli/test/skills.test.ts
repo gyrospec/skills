@@ -5,9 +5,9 @@ import { parsePrd } from '@gyrospec/format';
 import { fixture, run, tempRepo } from './helpers.js';
 const root = resolve('../../skills/gyrospec');
 const manifest = JSON.parse(readFileSync(join(root, '.claude-plugin/plugin.json'), 'utf8')) as { skills: string[] };
-const flow = ['gyro-discovery', 'gyro-prd', 'gyro-prototype', 'gyro-spec', 'gyro-breakdown', 'gyro-writing-plans', 'gyro-executing-plans'];
+const flow = ['gyro-discovery', 'gyro-prd', 'gyro-prototype', 'gyro-spec', 'gyro-breakdown', 'gyro-writing-plans', 'gyro-executing-plans', 'gyro-ship'];
 it('every skill listed in plugin.json exists', () => {
-  expect(manifest.skills).toHaveLength(10);
+  expect(manifest.skills).toHaveLength(11);
   for (const folder of manifest.skills) expect(existsSync(join(root, folder, 'SKILL.md')), folder).toBe(true);
 });
 function lint(dir: string): string[] {
@@ -29,7 +29,7 @@ function lint(dir: string): string[] {
     if (!skill.includes('gyro status')) errors.push('missing status preflight');
     const step = flow.indexOf(name), next = step >= 0 ? flow[step + 1] : undefined;
     if (next && !skill.includes(next)) errors.push('missing next phase');
-    for (const match of skill.matchAll(/Call the Skill tool with "([^"]+)"/g)) if (!['gyro', 'grilling', 'prototype', 'tdd', 'code-review', 'domain-modeling'].includes(match[1])) errors.push(`illegal dependency ${match[1]}`);
+    for (const match of skill.matchAll(/Call the Skill tool with "([^"]+)"/g)) if (!['gyro', 'grilling', 'prototype', 'tdd', 'code-review', 'domain-modeling', 'pr'].includes(match[1])) errors.push(`illegal dependency ${match[1]}`);
   }
   return errors;
 }
@@ -52,7 +52,7 @@ function upstreamFolder(name: string): string | undefined {
 }
 /** Upstream skills the phases call, plus every skill those call in turn. */
 function reachableUpstream(): string[] {
-  const seen = new Set<string>(), queue = ['grilling', 'prototype', 'tdd', 'code-review', 'domain-modeling'];
+  const seen = new Set<string>(), queue = ['grilling', 'prototype', 'tdd', 'code-review', 'domain-modeling', 'pr'];
   while (queue.length) {
     const name = queue.shift()!;
     if (seen.has(name)) continue;
@@ -158,4 +158,17 @@ it('retro traces surprises to phases and changes nothing approved', () => {
   const retro = read('gyro-retro/SKILL.md');
   for (const needle of ['`done` or `blocked`', '.gyro/<slug>/retros/<nn>.md', 'phase that should have caught it', 'automated check', 'Never edit an approved artifact', 'file nothing yourself', 'Never quote secrets']) expect(retro, needle).toContain(needle);
   expect(read('gyro-executing-plans/SKILL.md')).toContain('## Review findings');
+});
+it('ships verified work through the commit rules, local checks, one PR, and screenshots off the PR branch', () => {
+  const gyro = read('gyro/SKILL.md');
+  for (const needle of ['## Commits', '`COMMITS.md`', 'no AI attribution']) expect(gyro, needle).toContain(needle);
+  const commits = read('gyro/COMMITS.md');
+  for (const needle of ['type(scope)!:', 'Never use `git add -A`', 'No AI attribution anywhere', 'Co-Authored-By', '--no-verify']) expect(commits, needle).toContain(needle);
+  const executing = read('gyro/EXECUTING.md');
+  for (const needle of ['loading, error, empty, and success', 'light and dark mode', 'Do not run build commands', 'database container']) expect(executing, needle).toContain(needle);
+  const ship = read('gyro-ship/SKILL.md');
+  for (const needle of ['Awaiting PR URL after verification', 'never force-push', 'Never fix code', 'Call the Skill tool with "pr"', '`SCREENSHOTS.md`', '--status done --pr <url>']) expect(ship, needle).toContain(needle);
+  const shots = read('gyro-ship/SCREENSHOTS.md');
+  for (const needle of ['gyro-screenshots', 'git restore', 'Never build a mock API', 'never land on the PR branch']) expect(shots, needle).toContain(needle);
+  for (const folder of ['gyro-executing-plans', 'gyro-implement']) expect(read(`${folder}/SKILL.md`), folder).toContain('/gyro-ship <slug>');
 });

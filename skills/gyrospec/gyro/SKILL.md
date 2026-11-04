@@ -56,6 +56,10 @@ Everything under `.gyro/` belongs in the product repository's git history. Commi
 
 Slugs match `^[a-z0-9]+(-[a-z0-9]+)*$` and have at most 60 characters. Sizes are `small`, `medium`, or `large`. `platformKey` remains null in local mode.
 
+## Commits
+
+Before the first commit you make, read `COMMITS.md` in this skill's directory and follow it for every commit: staging, the Conventional Commits message, and the commit itself. Commits, PR titles, PR bodies, and PR comments carry no AI attribution at all.
+
 ## Formats
 
 A PRD opens with `## Objective` (one core objective), `## Success Metrics` (a Metric | Baseline | Target table), `## User Journey`, and `## Scope`; `/gyro-prd` holds the full template. Then the requirement blocks, each statement written as a user story:
@@ -97,7 +101,7 @@ Statuses: `todo`, `in_progress`, `blocked`, `done`. A blocked ticket also has `b
 
 ## Plans
 
-Sub-ticket plans live in `docs/superpowers/plans/<YYYY-MM-DD>-<slug>-<nn>.md`. Two files beside this one hold the rules, and you read one only when a phase skill or a subagent brief tells you to: `PLANNING.md` for writing a plan, `EXECUTING.md` for working through one.
+Sub-ticket plans live in `docs/superpowers/plans/<YYYY-MM-DD>-<slug>-<nn>.md`. Two files beside this one hold the rules, and you read one only when a phase skill or a subagent brief tells you to: `PLANNING.md` for writing a plan, `EXECUTING.md` for working through one. A third, `COMMITS.md`, holds the commit rules above.
 
 ## Status and approvals
 

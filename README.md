@@ -22,15 +22,16 @@ You type each phase; none of them moves to the next on its own.
 | [`/gyro-spec`](skills/gyrospec/gyro-spec/SKILL.md) | Design against the approved requirements and ask for approval |
 | [`/gyro-breakdown`](skills/gyrospec/gyro-breakdown/SKILL.md) | Draft and validate vertical sub-tickets |
 | [`/gyro-writing-plans`](skills/gyrospec/gyro-writing-plans/SKILL.md) | Write a TDD plan for a ready sub-ticket |
-| [`/gyro-executing-plans`](skills/gyrospec/gyro-executing-plans/SKILL.md) | Execute a current plan and record progress and the PR |
+| [`/gyro-executing-plans`](skills/gyrospec/gyro-executing-plans/SKILL.md) | Execute a current plan and record progress |
 | [`/gyro-implement`](skills/gyrospec/gyro-implement/SKILL.md) | Plan and build every ready sub-ticket in parallel subagents on one integration branch, with one plan review per wave |
+| [`/gyro-ship`](skills/gyrospec/gyro-ship/SKILL.md) | Check, commit, push, and open the PR for verified work, attach UI screenshots, and record the PR on the sub-tickets |
 | [`/gyro-retro`](skills/gyrospec/gyro-retro/SKILL.md) | Review how a finished or blocked sub-ticket went and propose fixes to the phase that should have caught each surprise |
 
 The model-invoked [`gyro`](skills/gyrospec/gyro/SKILL.md) skill is the shared reference the phases call: the `.gyro/` layout, the format conventions, running the script, and how approvals are asked for and recorded.
 
 ## What it runs
 
-One local, readable script, `gyro.mjs`, run with `node` from your product repository's root. It reads and writes only `.gyro/` there, makes no network requests, and reads no credentials. The phase skills write your PRD, prototype, spec, sub-tickets, and plans in the repository, and the executing skills run `git status`, `git diff`, and your tests. `/gyro-implement` also makes local commits, branches, and worktrees once you allow it. No hooks, MCP servers, or installs. It needs an agent with a shell and Node 20 or later, such as Claude Code or Codex. Details: [skills/gyrospec/README.md](skills/gyrospec/README.md#what-it-runs-and-what-it-touches).
+One local, readable script, `gyro.mjs`, run with `node` from your product repository's root. It reads and writes only `.gyro/` there, makes no network requests, and reads no credentials. The phase skills write your PRD, prototype, spec, sub-tickets, and plans in the repository, and the executing skills run `git status`, `git diff`, and your tests. `/gyro-implement` also makes local commits, branches, and worktrees once you allow it, and `/gyro-ship` commits with Conventional Commits, pushes, and opens the PR. No hooks, MCP servers, or installs. It needs an agent with a shell and Node 20 or later, such as Claude Code or Codex. Details: [skills/gyrospec/README.md](skills/gyrospec/README.md#what-it-runs-and-what-it-touches).
 
 ## Installation
 

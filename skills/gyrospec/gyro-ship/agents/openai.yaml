@@ -1,0 +1,5 @@
+interface:
+  display_name: "Gyrospec Ship"
+  short_description: "Check, push, and open the PR"
+policy:
+  allow_implicit_invocation: false

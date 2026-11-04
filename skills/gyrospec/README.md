@@ -10,8 +10,9 @@ Run discovery, PRD, prototype (or not applicable), spec, sub-ticket breakdown, p
 - [gyro-spec](gyro-spec/SKILL.md): Design against the approved requirements and ask for approval.
 - [gyro-breakdown](gyro-breakdown/SKILL.md): Draft and validate vertical sub-tickets.
 - [gyro-writing-plans](gyro-writing-plans/SKILL.md): Write a TDD plan for a ready sub-ticket.
-- [gyro-executing-plans](gyro-executing-plans/SKILL.md): Execute a current plan and record progress and the PR.
+- [gyro-executing-plans](gyro-executing-plans/SKILL.md): Execute a current plan and record progress.
 - [gyro-implement](gyro-implement/SKILL.md): Plan and build every ready sub-ticket in parallel subagents on one integration branch.
+- [gyro-ship](gyro-ship/SKILL.md): Check, commit, push, and open the PR for verified work, with UI screenshots.
 - [gyro-retro](gyro-retro/SKILL.md): Review how a finished or blocked sub-ticket went and propose fixes.
 
 ## Model-invoked
@@ -22,13 +23,13 @@ Run discovery, PRD, prototype (or not applicable), spec, sub-ticket breakdown, p
 
 - **One local script.** The skills tell the agent to run `node <plugin>/gyro/scripts/gyro.mjs` from your product repository's root. It is readable bundled source: the `gyro` CLI from `packages/cli` in [gyrospec/skills](https://github.com/gyrospec/skills) plus the `htmlparser2` and `entities` packages (licenses in `gyro/scripts/THIRD_PARTY_LICENSES.txt`). It makes no network requests, reads no environment credentials, and sends no data anywhere.
 - **Files.** The script reads and writes only `.gyro/` in the current repository (`config.json`, `ticket.json`, `gates.json`, `approved/` snapshots, `tickets/`, and the artifacts you write with the skills). The phase skills also write the PRD, prototype, spec, discovery log, sub-tickets, and implementation plans (`docs/superpowers/plans/`) in that repository, and the executing skill changes your code as its plan says.
-- **Git and tests.** `gyro-executing-plans` runs `git status`, `git diff`, and your project's own test commands, and opens a pull request only when you ask for one. `gyro-implement` asks once for local commits, then creates an integration branch, one branch and worktree per sub-ticket, and merges between them; it pushes or opens a PR only when you ask. Commits, pushes, and PRs follow your instructions; invoking a skill does not grant them.
+- **Git and tests.** `gyro-executing-plans` runs `git status`, `git diff`, and your project's own lint, typecheck, and test commands, and makes no commits. `gyro-implement` asks once for local commits, then creates an integration branch, one branch and worktree per sub-ticket, and merges between them. Only `gyro-ship` pushes: typing it is your request to commit the verified work, push its branch, open the PR, and post screenshots of UI changes on a separate `gyro-screenshots` branch. Every commit follows the Conventional Commits rules in `gyro/COMMITS.md` and carries no AI attribution. No other skill grants commits, pushes, or PRs.
 - **No hooks, no MCP servers, no background processes, no installs.** Nothing runs unless you type a phase skill or the agent follows one.
 - **Needs a shell and Node 20 or later.** It works in agents that can run commands in your repository, such as Claude Code and Codex. In an app without a shell or code execution, the phases cannot run `gyro`.
 
 ## Installation
 
-Gyrospec installs in any agent that reads Agent Skills folders (`SKILL.md`). Install two things: this plugin, and `gyrospec-upstream-skills`, which provides the upstream skills the phases call (`grilling`, `prototype`, `tdd`, `code-review`, `domain-modeling`, `codebase-design`). Both come from the [Gyrospec marketplace](https://github.com/gyrospec/marketplace). Every agent needs Node 20 or later, because the skills run `gyro.mjs` with `node`.
+Gyrospec installs in any agent that reads Agent Skills folders (`SKILL.md`). Install two things: this plugin, and `gyrospec-upstream-skills`, which provides the upstream skills the phases call (`grilling`, `prototype`, `tdd`, `code-review`, `domain-modeling`, `codebase-design`, `pr`). `gyro-ship` also needs the GitHub CLI (`gh`) signed in. Both come from the [Gyrospec marketplace](https://github.com/gyrospec/marketplace). Every agent needs Node 20 or later, because the skills run `gyro.mjs` with `node`.
 
 | Agent | How | Tested |
 |---|---|---|
@@ -80,7 +81,7 @@ gemini skills install https://github.com/gyrospec/skills.git --path skills/produ
 
 ### Any other agent: copy the folders
 
-Copy (or symlink) each of the eight `skills/gyrospec/<skill>` folders into the agent's skills directory (for Codex without plugins, `~/.agents/skills`), then these upstream folders, each as its own skill folder:
+Copy (or symlink) every `skills/gyrospec/<skill>` folder into the agent's skills directory (for Codex without plugins, `~/.agents/skills`), then these upstream folders, each as its own skill folder:
 
 - `skills/productivity/grilling`
 - `skills/engineering/prototype`
@@ -88,6 +89,7 @@ Copy (or symlink) each of the eight `skills/gyrospec/<skill>` folders into the a
 - `skills/engineering/code-review`
 - `skills/engineering/domain-modeling`
 - `skills/engineering/codebase-design` (called by `tdd`)
+- `skills/engineering/pr` (called by `gyro-ship`)
 
 Copied folders do not update themselves: copy them again after a release.
 

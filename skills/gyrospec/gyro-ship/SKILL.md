@@ -1,0 +1,23 @@
+---
+name: gyro-ship
+description: Check, commit, push, and open the PR for verified sub-ticket work, attach UI screenshots, and record the PR on the sub-tickets.
+disable-model-invocation: true
+---
+
+# Ship
+
+Invoking this skill is the user's request to commit the verified work, push its branch, open one pull request, and comment on it. It grants nothing else: no force-push, no merge, no push of any branch other than the PR branch and the screenshot branch in `SCREENSHOTS.md`, and no work outside the slug.
+
+1. Call the Skill tool with "gyro". Follow its Node 20+ check, script path, language, and commit rules. Reply in the user's language and keep convention keywords English.
+2. Require `<slug>` and an optional `<nn>`, normalize `nn`, and run `gyro status <slug> --json`. Identify the route:
+   - **One sub-ticket** (`<slug> <nn>`, after `/gyro-executing-plans`): the ticket is `blocked` with the reason `Awaiting PR URL after verification`, and its plan `docs/superpowers/plans/<YYYY-MM-DD>-<slug>-<nn>.md` has every task checked and a `## Review findings` section. The PR branch is `gyro/<slug>-<nn>`.
+   - **Integration branch** (`<slug>`, after `/gyro-implement`): the run ledger `docs/superpowers/plans/<slug>-implement.md` has a `## Review findings` section, and the tickets it finished are `done` with no `pr`. The PR branch is the ledger's integration branch.
+
+   In both routes the PRD, prototype, and spec gates are current (a gate shows `draft` when its file was edited without re-approval), no ticket of the route is stale, and every plan's `Spec revision` equals the current approved spec revision. If any check fails, show it, suggest `/gyro-executing-plans <slug> <nn>` or `/gyro-implement <slug>`, and stop. A ticket that already has a `pr` is shipped: show its URL and stop.
+3. Prepare the branch. Run `git status --porcelain --branch`. In the one-sub-ticket route, when the current branch is the repository's default branch, create `gyro/<slug>-<nn>` from it now, which carries the uncommitted work along. In the integration route, check out the ledger's integration branch. Any change that the plan's `## Files` list, the plan file, the ledger, and `.gyro/<slug>/` do not account for, and anything under the plan's `**Out of scope:**`, is someone else's WIP: leave it unstaged and name it in the report.
+4. Run the project's lint, typecheck, and test commands by step 5 of `EXECUTING.md` in the gyro skill's directory: no build, no backend, no Docker except a database container for a migration, and no waiting for CI. Applying a formatter's or linter's own autofix and rerunning is fine. Any other failure stops shipping here: report each by name and tell the user to resume with `/gyro-executing-plans <slug> <nn>` or `/gyro-implement <slug>`. Never fix code in this skill.
+5. Commit the work in scope by the commit rules in the gyro reference, as separate atomic commits where the changes are unrelated. Push with `git push -u origin <branch>` and never force-push. If the push is rejected, show why and stop.
+6. Open the pull request. When `gh pr view <branch>` finds an open one, reuse it. Otherwise Call the Skill tool with "pr" to write the body, and add a line naming the sub-ticket files and the approved spec snapshot `.gyro/<slug>/approved/spec.<n>.md`. Its Evidence section shows the checks from step 4; screenshots follow as a comment. Title the PR as one commit header by `COMMITS.md` in the gyro skill's directory, summing up the whole branch. Write the body to a file outside the repository and run `gh pr create --base <default branch> --head <branch> --title "<title>" --body-file <file>`. If `gh` is missing or not signed in, tell the user and stop; the commits and the push stay.
+7. When the diff changes UI, read `SCREENSHOTS.md` in this skill's directory and follow it. Otherwise skip screenshots and say so in the report.
+8. Run `gyro status <slug> --json` again and repeat the gate and staleness checks from step 2. If one fails, leave the tickets as they are, report the PR URL with the failed check, name the phase that fixes it, and stop. Otherwise run `gyro ticket <slug> <nn> --status done --pr <url>` for the sub-ticket, or for every ticket the ledger records as finished, and add the URL to the ledger. Commit those `.gyro/` and ledger changes by the same rules and push them to the PR branch.
+9. Run `gyro status <slug> --json` and `gyro status <slug>`. Report the PR URL, the commits, each check with its result, the screenshots attached or why there are none, and any WIP left unstaged. Tell the user the next step is the returned `next`, and mention that `/gyro-retro <slug> <nn>` can review each shipped sub-ticket. Stop. Never invoke another phase automatically.
