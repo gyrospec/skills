@@ -95,6 +95,10 @@ Describe the complete behavior, verification, and implementing spec sections.
 
 Statuses: `todo`, `in_progress`, `blocked`, `done`. A blocked ticket also has `blocked_reason`. `blocked_by` contains ticket numbers such as `01`. `spec_revision` is the approved source revision. Keep numbers when reviewing stale tickets; update their source revision only after reviewing their refs and body against the current approved spec.
 
+## Plans
+
+Sub-ticket plans live in `docs/superpowers/plans/<YYYY-MM-DD>-<slug>-<nn>.md`. Two files beside this one hold the rules, and you read one only when a phase skill or a subagent brief tells you to: `PLANNING.md` for writing a plan, `EXECUTING.md` for working through one.
+
 ## Status and approvals
 
 `gyro approve` and `gyro ticket` hold `.gyro/<slug>/.lock` while they write. If one refuses because the lock exists, check that no other gyro command is running before deleting it, and never commit a `.lock` file.
@@ -104,3 +108,15 @@ Run `gyro status <slug> --json` before every phase. Respect `next`; show missing
 Before approval, show the gate, next approval revision (current revision plus one), a summary of changes, REQ diff from `gyro status`, and any blockers. For a prototype without UI, obtain a nonempty reason and show it in the summary. Ask a direct yes/no approval question. Only after an explicit yes run `gyro approve <gate> <slug> --quote "<the user's words>"`, adding `--not-applicable "<reason>"` for that prototype branch. Pass the actual answer as one argument using the shell's safe quoting rules. Silence, partial praise such as "looks fine overall", and your own recommendation are never approval. If the answer is ambiguous, ask for explicit approval and wait.
 
 After the command succeeds, verify status. If it refuses, show its lines verbatim, fix the cause, and ask again when the approved content or summary changes. Local approvals are records, not proof of a human identity; platform mode will require new approvals on the platform.
+
+## Builder check
+
+Before asking for PRD or spec approval, test the artifact on the person who will build from it. Start one subagent with a fresh context window, never a fork of this conversation: a fork inherits the context the check exists to escape. Give it pointers only: the repository root, the artifact path, the approved upstream snapshots, and the glossary. Tell it which reader it is (the phase skill names the reader and what that reader looks for), that it edits nothing, and that it reports a numbered list of what it would still need to ask before it could do its job, each with the section or line that raised it. Where the harness cannot start a subagent, do the read yourself as a separate pass and tell the user the check ran without a fresh context.
+
+Settle each question in one of three ways:
+
+- **Already answered** by the codebase, an approved upstream snapshot, or discovery: fix the artifact so the answer is written down.
+- **A minor call** that changes no product behavior and no approved scope: make the call, write it into the artifact, and list it in the approval summary as your call so the user can overturn it.
+- **Changes what gets built**: bring these to the user in one numbered round, each with the options and your recommendation, worded so "yes" accepts the recommendation. A product decision that no approved upstream artifact settles belongs to the phase that owns it; never settle it inside a downstream artifact.
+
+Rerun `gyro check` after every edit. Run the builder check again only when that round changed what gets built. In the approval summary, say how many questions the check raised and how each was settled.

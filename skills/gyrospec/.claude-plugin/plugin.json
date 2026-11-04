@@ -1,6 +1,6 @@
 {
   "name": "gyrospec",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Human-driven product engineering: discovery, PRD, prototype, spec, sub-tickets, and planned execution, with gates you approve.",
   "author": {
     "name": "Gyrospec",
@@ -10,6 +10,7 @@
   "repository": "https://github.com/gyrospec/skills",
   "skills": [
     "./gyro", "./gyro-discovery", "./gyro-prd", "./gyro-prototype", "./gyro-spec",
-    "./gyro-breakdown", "./gyro-writing-plans", "./gyro-executing-plans"
+    "./gyro-breakdown", "./gyro-writing-plans", "./gyro-executing-plans",
+    "./gyro-implement", "./gyro-retro"
   ]
 }

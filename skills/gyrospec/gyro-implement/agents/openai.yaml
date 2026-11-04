@@ -1,0 +1,5 @@
+interface:
+  display_name: "Gyrospec Implement"
+  short_description: "Plan and build ready sub-tickets in parallel"
+policy:
+  allow_implicit_invocation: false

@@ -7,7 +7,7 @@ const root = resolve('../../skills/gyrospec');
 const manifest = JSON.parse(readFileSync(join(root, '.claude-plugin/plugin.json'), 'utf8')) as { skills: string[] };
 const flow = ['gyro-discovery', 'gyro-prd', 'gyro-prototype', 'gyro-spec', 'gyro-breakdown', 'gyro-writing-plans', 'gyro-executing-plans'];
 it('every skill listed in plugin.json exists', () => {
-  expect(manifest.skills).toHaveLength(8);
+  expect(manifest.skills).toHaveLength(10);
   for (const folder of manifest.skills) expect(existsSync(join(root, folder, 'SKILL.md')), folder).toBe(true);
 });
 function lint(dir: string): string[] {
@@ -27,7 +27,7 @@ function lint(dir: string): string[] {
     if (!/^disable-model-invocation: true$/m.test(front)) errors.push('phase must disable model invocation');
     if (!/^policy:\r?\n  allow_implicit_invocation: false$/m.test(metadata)) errors.push('phase must disable implicit invocation');
     if (!skill.includes('gyro status')) errors.push('missing status preflight');
-    const next = flow[flow.indexOf(name) + 1];
+    const step = flow.indexOf(name), next = step >= 0 ? flow[step + 1] : undefined;
     if (next && !skill.includes(next)) errors.push('missing next phase');
     for (const match of skill.matchAll(/Call the Skill tool with "([^"]+)"/g)) if (!['gyro', 'grilling', 'prototype', 'tdd', 'code-review', 'domain-modeling'].includes(match[1])) errors.push(`illegal dependency ${match[1]}`);
   }
@@ -115,7 +115,7 @@ it('carries upstream notices inside the plugin and inside every adapted skill fo
   const matt = 'Copyright (c) 2026 Matt Pocock', superpowers = 'Copyright (c) 2025 Jesse Vincent';
   const notices = readFileSync(join(root, 'THIRD_PARTY_NOTICES.md'), 'utf8');
   for (const needle of [matt, superpowers]) expect(notices, needle).toContain(needle);
-  const adapted: Record<string, string> = { 'gyro-breakdown': matt, 'gyro-writing-plans': superpowers, 'gyro-executing-plans': superpowers };
+  const adapted: Record<string, string> = { 'gyro-breakdown': matt, 'gyro-implement': matt, 'gyro-writing-plans': superpowers, 'gyro-executing-plans': superpowers, gyro: superpowers };
   for (const [folder, copyright] of Object.entries(adapted)) expect(readFileSync(join(root, folder, 'NOTICE.md'), 'utf8'), folder).toContain(copyright);
 });
 it('has no em dash in plugin files other than the generated bundle', () => {
@@ -125,4 +125,37 @@ it('has no em dash in plugin files other than the generated bundle', () => {
     else if (item.name !== 'gyro.mjs' && !item.name.endsWith('.png')) expect(readFileSync(file, 'utf8'), file).not.toContain(String.fromCharCode(0x2014));
   } };
   walk(root);
+});
+
+const read = (file: string) => readFileSync(join(root, file), 'utf8');
+it('starts every subagent a skill dispatches with a fresh context window', () => {
+  const files = readdirSync(root, { recursive: true }).map(String).filter(f => f.endsWith('.md'));
+  const dispatching = files.filter(f => /\b[Ss]tart (?:one|a|an|every) [^.]*subagent/.test(read(f)));
+  expect(dispatching.map(f => f.replaceAll(String.fromCharCode(92), '/')).sort()).toEqual(['gyro-implement/SKILL.md', 'gyro-retro/SKILL.md', 'gyro/SKILL.md']);
+  for (const f of dispatching) expect(read(f), f).toContain('fresh context window');
+});
+it('runs a builder check before PRD and spec approval', () => {
+  expect(read('gyro/SKILL.md')).toContain('## Builder check');
+  for (const f of ['gyro-prd/SKILL.md', 'gyro-spec/SKILL.md']) expect(read(f), f).toContain('Run the builder check from the gyro reference');
+  expect(read('gyro-prd/SKILL.md')).toContain('appended to `discovery.md`');
+  expect(read('gyro-spec/SKILL.md')).toContain('/gyro-prd <slug>');
+});
+it('asks why first and only questions that change what gets built', () => {
+  const discovery = read('gyro-discovery/SKILL.md');
+  for (const needle of ['**Why first.**', 'no example answers', 'Ask only what changes what gets built', 'Never ask about process', 'Dig for context']) expect(discovery, needle).toContain(needle);
+});
+it('keeps plan writing and execution rules in one place the parallel route shares', () => {
+  const planning = read('gyro/PLANNING.md'), executing = read('gyro/EXECUTING.md');
+  for (const needle of ['not a transcript', 'proportion', 'Planning is not building', '## Files', '**Interfaces**']) expect(planning, needle).toContain(needle);
+  for (const needle of ['Call the Skill tool with "tdd"', 'whole test suite', 'three fix attempts']) expect(executing, needle).toContain(needle);
+  expect(read('gyro-writing-plans/SKILL.md')).toContain('`PLANNING.md`');
+  expect(read('gyro-executing-plans/SKILL.md')).toContain('`EXECUTING.md`');
+  const implement = read('gyro-implement/SKILL.md');
+  for (const needle of ['`PLANNING.md`', '`EXECUTING.md`', 'gyro/<slug>', 'never edit `.gyro/`', 'Ask once for that authority', 'files overlap', 'explicitly clears', '"code-review"', 'no issue tracker', '--status done` without `--pr`', 'gyro-retro']) expect(implement, needle).toContain(needle);
+  expect(read('gyro-breakdown/SKILL.md')).toContain('/gyro-implement <slug>');
+});
+it('retro traces surprises to phases and changes nothing approved', () => {
+  const retro = read('gyro-retro/SKILL.md');
+  for (const needle of ['`done` or `blocked`', '.gyro/<slug>/retros/<nn>.md', 'phase that should have caught it', 'automated check', 'Never edit an approved artifact', 'file nothing yourself', 'Never quote secrets']) expect(retro, needle).toContain(needle);
+  expect(read('gyro-executing-plans/SKILL.md')).toContain('## Review findings');
 });

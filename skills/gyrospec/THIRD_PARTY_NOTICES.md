@@ -6,7 +6,7 @@ The gyrospec plugin adapts skills from the two projects below. Each adapted skil
 
 Source: https://github.com/mattpocock/skills
 
-`gyro-breakdown` adapts the `to-tickets` skill. The phase skills call skills from this project (`grilling`, `prototype`, `tdd`, `code-review`, `domain-modeling`, `codebase-design`), which are installed separately.
+`gyro-breakdown` adapts the `to-tickets` skill, and `gyro-implement` adapts the `implement-spec` skill. The phase skills call skills from this project (`grilling`, `prototype`, `tdd`, `code-review`, `domain-modeling`, `codebase-design`), which are installed separately.
 
 MIT License
 
@@ -34,7 +34,7 @@ SOFTWARE.
 
 Source: https://github.com/obra/superpowers
 
-`gyro-writing-plans` and `gyro-executing-plans` adapt the Superpowers writing-plans and executing-plans skills.
+`gyro-writing-plans` and `gyro-executing-plans` adapt the Superpowers writing-plans and executing-plans skills, whose shared rules live in `gyro/PLANNING.md` and `gyro/EXECUTING.md`.
 
 MIT License
 

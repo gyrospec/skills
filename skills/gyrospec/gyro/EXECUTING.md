@@ -1,0 +1,8 @@
+# Executing a sub-ticket plan
+
+The rules for working through one reviewed plan's tasks. `/gyro-executing-plans` and the implementer subagents of `/gyro-implement` both follow them; the calling skill owns the preflight, the review baseline, status updates, code review, and the PR. This adapts Superpowers executing-plans; attribution is in this folder's `NOTICE.md`.
+
+1. Read the entire plan, the sub-ticket, the approved spec snapshot, the referenced PRD blocks, and the repository instructions before changing anything. Critically review paths, interfaces, assumptions, and commands. If the plan cannot work as written, stop and report the concrete issue with the smallest deviation you propose. Never silently redesign approved behavior.
+2. Call the Skill tool with "tdd". Work the tasks in the plan's order: write the failing test, run it and verify the expected failure, implement, and rerun to the expected pass. Execute every verification command and compare its output with the plan's expectation. Tick a task's checkbox in the plan only after its proof passes, with a one-line note of the evidence. Never skip a failing check or label an unrun check as passing.
+3. The project's whole test suite defines green, not only the task's test file. Run the project's test command before declaring the plan's work finished, and report every failure by name, including failures you did not cause.
+4. Report a mismatch, diagnose it, and resolve it within scope. When the same check still fails after three fix attempts, stop and report it as a blocker with the evidence instead of trying a fourth. A step that needs a human decision, a credential, an external action, or an impossible requirement is also a blocker: stop and report it with the evidence.

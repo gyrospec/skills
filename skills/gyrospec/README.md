@@ -11,6 +11,8 @@ Run discovery, PRD, prototype (or not applicable), spec, sub-ticket breakdown, p
 - [gyro-breakdown](gyro-breakdown/SKILL.md): Draft and validate vertical sub-tickets.
 - [gyro-writing-plans](gyro-writing-plans/SKILL.md): Write a TDD plan for a ready sub-ticket.
 - [gyro-executing-plans](gyro-executing-plans/SKILL.md): Execute a current plan and record progress and the PR.
+- [gyro-implement](gyro-implement/SKILL.md): Plan and build every ready sub-ticket in parallel subagents on one integration branch.
+- [gyro-retro](gyro-retro/SKILL.md): Review how a finished or blocked sub-ticket went and propose fixes.
 
 ## Model-invoked
 
@@ -20,7 +22,7 @@ Run discovery, PRD, prototype (or not applicable), spec, sub-ticket breakdown, p
 
 - **One local script.** The skills tell the agent to run `node <plugin>/gyro/scripts/gyro.mjs` from your product repository's root. It is readable bundled source: the `gyro` CLI from `packages/cli` in [gyrospec/skills](https://github.com/gyrospec/skills) plus the `htmlparser2` and `entities` packages (licenses in `gyro/scripts/THIRD_PARTY_LICENSES.txt`). It makes no network requests, reads no environment credentials, and sends no data anywhere.
 - **Files.** The script reads and writes only `.gyro/` in the current repository (`config.json`, `ticket.json`, `gates.json`, `approved/` snapshots, `tickets/`, and the artifacts you write with the skills). The phase skills also write the PRD, prototype, spec, discovery log, sub-tickets, and implementation plans (`docs/superpowers/plans/`) in that repository, and the executing skill changes your code as its plan says.
-- **Git and tests.** `gyro-executing-plans` runs `git status`, `git diff`, and your project's own test commands, and opens a pull request only when you ask for one. Commits, pushes, and PRs follow your instructions; invoking a skill does not grant them.
+- **Git and tests.** `gyro-executing-plans` runs `git status`, `git diff`, and your project's own test commands, and opens a pull request only when you ask for one. `gyro-implement` asks once for local commits, then creates an integration branch, one branch and worktree per sub-ticket, and merges between them; it pushes or opens a PR only when you ask. Commits, pushes, and PRs follow your instructions; invoking a skill does not grant them.
 - **No hooks, no MCP servers, no background processes, no installs.** Nothing runs unless you type a phase skill or the agent follows one.
 - **Needs a shell and Node 20 or later.** It works in agents that can run commands in your repository, such as Claude Code and Codex. In an app without a shell or code execution, the phases cannot run `gyro`.
 
